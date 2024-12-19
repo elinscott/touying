@@ -86,6 +86,15 @@
   )
 })
 
+#let bar(height: 2pt, primary) = {
+  grid(
+    columns: (100%),
+    rows: height,
+    gutter: 0pt,
+    cell(fill: primary)
+  )
+}
+
 
 /// Left and right.
 ///
