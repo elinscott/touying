@@ -75,14 +75,18 @@
 #let default-header(self) = {
   set std.align(top)
   v(1.25em)
-  grid(
-    rows: (auto),
-    row-gutter: 3mm,
-    block(
-      text(fill: self.colors.primary, weight: "bold", size: 1.5em, utils.call-or-display(self, self.store.header)),
-    ),
-    components.bar(height: 2pt, self.colors.primary)
-  )
+  let title = utils.call-or-display(self, self.store.header)
+
+  if title == [] {
+    grid(
+      rows: (auto),
+      row-gutter: 3mm,
+      block(
+        text(fill: self.colors.primary, weight: "bold", size: 1.5em, title),
+      ),
+      components.bar(height: 2pt, self.colors.primary)
+    )
+  }
 }
 
 #let slide(
@@ -311,6 +315,9 @@
 })
 
 
+#let marvel-red = rgb("#ff2600")
+#let marvel-lightred = rgb("#ff8d7d")
+
 /// Touying marvel theme.
 ///
 /// Example:
@@ -380,8 +387,8 @@
       alert: utils.alert-with-primary-color,
     ),
     config-colors(
-      primary: rgb("#ff2600"),
-      secondary: rgb("#ff8d7d"),
+      primary: marvel-red,
+      secondary: marvel-lightred,
       tertiary: rgb("#7c7c7c"),
       neutral-lightest: rgb("#ffffff"),
       neutral: rgb("#7c7c7c"),
