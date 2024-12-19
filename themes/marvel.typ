@@ -77,16 +77,14 @@
   v(1.25em)
   let title = utils.call-or-display(self, self.store.header)
 
-  if title == [] {
-    grid(
-      rows: (auto),
-      row-gutter: 3mm,
-      block(
-        text(fill: self.colors.primary, weight: "bold", size: 1.5em, title),
-      ),
-      components.bar(height: 2pt, self.colors.primary)
-    )
-  }
+  grid(
+    rows: (auto),
+    row-gutter: 3mm,
+    block(
+      text(fill: self.colors.primary, weight: "bold", size: 1.5em, title),
+    ),
+    components.bar(height: 2pt, self.colors.primary)
+  )
 }
 
 #let slide(
@@ -97,9 +95,6 @@
   align: auto,
   ..bodies,
 ) = touying-slide-wrapper(self => {
-
-  set footnote.entry(clearance: 0em, separator: [], indent: 0em)
-  show footnote.entry: set text(0.6em, fill: self.colors.neutral)
 
   if align != auto {
     self.store.align = align
@@ -284,7 +279,6 @@
   }
   self = utils.merge-dicts(
     self,
-    config-common(freeze-slide-counter: true),
     config-page(margin: 1em, ..args),
   )
   set text(fill: self.colors.neutral-lightest, weight: "bold", size: 2em)
@@ -305,18 +299,19 @@
 /// That means that `#matrix-slide[...][...]` stacks horizontally and `#matrix-slide(columns: 1)[...][...]` stacks vertically.
 /// 
 /// - config (dictionary): is the configuration of the slide. Use `config-xxx` to set individual configurations for the slide. To apply multiple configurations, use `utils.merge-dicts` to combine them.
-#let matrix-slide(config: (:), columns: none, rows: none, ..bodies) = touying-slide-wrapper(self => {
+#let matrix-slide(config: (:), columns: none, align: left + horizon, rows: none, ..bodies) = touying-slide-wrapper(self => {
+
   self = utils.merge-dicts(
     self,
-    config-common(freeze-slide-counter: true),
-    config-page(margin: 0em),
+    config-page(header: default-header(self), footer: default-footer(self, mono: false)),
   )
-  touying-slide(self: self, config: config, composer: components.checkerboard.with(columns: columns, rows: rows), ..bodies)
+  touying-slide(self: self, config: config, composer: components.checkerboard.with(columns: columns, rows: rows, alignment: align, color1: white, color2: white), ..bodies)
 })
 
 
 #let marvel-red = rgb("#ff2600")
 #let marvel-lightred = rgb("#ff8d7d")
+#let marvel-grey = rgb("#7c7c7c")
 
 /// Touying marvel theme.
 ///
@@ -389,7 +384,7 @@
     config-colors(
       primary: marvel-red,
       secondary: marvel-lightred,
-      tertiary: rgb("#7c7c7c"),
+      tertiary: marvel-grey,
       neutral-lightest: rgb("#ffffff"),
       neutral: rgb("#7c7c7c"),
       neutral-darkest: rgb("#000000"),
