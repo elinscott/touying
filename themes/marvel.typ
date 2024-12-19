@@ -34,7 +34,7 @@
   } else {
     "assets/marvel/snf_color_on_transparent.png"
   }
-  image(im, height: 0.7em)
+  image(im, height: 1em)
 }
 #let footer-b(self, mono: false) = {
   let f = if mono {
@@ -42,7 +42,7 @@
   } else {
     self.colors.primary
   }
-  text(fill: f, weight: "bold", size: 0.5em, "NCCR MARVEL - Slide " + utils.slide-counter.display())
+  text(fill: f, weight: "bold", size: 0.6em, "NCCR MARVEL - Slide " + utils.slide-counter.display())
 }
 
 #let footer-c(self, mono: false) = {
@@ -51,7 +51,7 @@
   } else {
     "assets/marvel/marvel_hexagons_color_on_transparent.png"
   }
-  image(im, height: 0.7em)
+  image(im, height: 1em)
 }
 
 #let default-footer(self, mono: false) = {
@@ -79,7 +79,7 @@
     rows: (auto),
     row-gutter: 3mm,
     block(
-      text(fill: self.colors.primary, weight: "bold", size: 1.2em, utils.call-or-display(self, self.store.header)),
+      text(fill: self.colors.primary, weight: "bold", size: 1.5em, utils.call-or-display(self, self.store.header)),
     ),
     components.bar(height: 2pt, self.colors.primary)
   )
@@ -168,28 +168,39 @@
           inset: 0em,
           breakable: false,
           {
-            text(size: 1.5em, fill: self.colors.primary, strong(info.title))
+            text(size: 2em, fill: self.colors.primary, strong(info.title))
             if info.subtitle != none {
               parbreak()
-              text(size: 1.2em, fill: self.colors.primary, info.subtitle)
+              text(size: 1.5em, fill: self.colors.primary, info.subtitle)
             }
           },
         )
-        set text(size: .8em)
         grid(
           columns: (1fr,) * calc.min(info.authors.len(), 3),
           column-gutter: 1em,
           row-gutter: 1em,
-          ..info.authors.map(author => text(fill: self.colors.neutral-darkest, author))
+          ..info.authors.map(author => text(weight: "bold", fill: self.colors.neutral-darkest, author))
         )
-        v(1em)
+        v(-1.7em)
         if info.institution != none {
-          parbreak()
-          text(size: .9em, info.institution)
+          linebreak()
+          text(size: .8em, info.institution)
+        }
+        parbreak()
+        if info.event != none {
+          text(size: .8em, info.event, fill: self.colors.neutral-darkest)
+        }
+        if info.location != none {
+          if info.event != none {
+            text("  |  ", fill: self.colors.neutral-darkest)
+          }
+          text(size: .8em, info.location, fill: self.colors.neutral-darkest)
         }
         if info.date != none {
-          parbreak()
-          text(size: .8em, utils.display-info-date(self))
+          if info.event != none or info.location != none {
+            text("  |  ", fill: self.colors.neutral-darkest)
+          }
+          text(size: .8em, utils.display-info-date(self), fill: self.colors.neutral-darkest)
         }
       },
     )
@@ -217,7 +228,7 @@
   let slide-body = {
     set std.align(horizon)
     show: pad.with(20%)
-    set text(size: 1.5em, fill: self.colors.neutral-lightest, weight: "bold")
+    set text(size: 2em, fill: self.colors.neutral-lightest, weight: "bold")
     stack(
       dir: ttb,
       spacing: .65em,
@@ -351,7 +362,7 @@
       paper: "presentation-" + aspect-ratio,
       header-ascent: 0em,
       footer-descent: 0em,
-      margin: (top: 3em, bottom: 3em, x: 2em),
+      margin: (top: 3.5em, bottom: 3em, x: 2em),
     ),
     config-common(
       slide-fn: slide,
@@ -361,7 +372,7 @@
     ),
     config-methods(
       init: (self: none, body) => {
-        set text(size: 25pt)
+        set text(size: 18pt)
         show heading: set text(fill: self.colors.primary)
 
         body
