@@ -197,7 +197,7 @@
   for child in children {
     // Handle horizontal-line
     // split content when we have a horizontal line
-    if horizontal-line-to-pagebreak and horizontal-line and child not in ([—], [–], [-]) {
+    if horizontal-line-to-pagebreak and horizontal-line and child not in ([—], [---], [–], [--], [-]) {
       current-slide = utils.trim(current-slide)
       (cont, recaller-map, current-headings, current-slide, new-start, is-first-slide) = call-slide-fn-and-reset(
         self + (headings: current-headings, is-first-slide: is-first-slide),
@@ -246,7 +246,7 @@
       assert(lbl in recaller-map, message: "label not found in the recaller map for slides")
       // recall the slide
       result.push(recaller-map.at(lbl))
-    } else if child == pagebreak() {
+    } else if child in (pagebreak(), pagebreak(weak: true)) {
       // split content when we have a pagebreak
       current-slide = utils.trim(current-slide)
       (cont, recaller-map, current-headings, current-slide, new-start, is-first-slide) = call-slide-fn-and-reset(
@@ -256,10 +256,10 @@
         recaller-map,
       )
       result.push(cont)
-    } else if horizontal-line-to-pagebreak and child == [—] {
+    } else if horizontal-line-to-pagebreak and child in ([—], [---]) {
       horizontal-line = true
       continue
-    } else if horizontal-line-to-pagebreak and horizontal-line and child in ([–], [-]) {
+    } else if horizontal-line-to-pagebreak and horizontal-line and child in ([–], [--], [-]) {
       continue
     } else if utils.is-heading(child, depth: slide-level) {
       let last-heading-depth = _get-last-heading-depth(current-headings)
@@ -595,18 +595,18 @@
 ///
 /// - position (string): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like context expression, you should set `stretch: false`.
 ///
 /// -> content
-#let alternatives-match(subslides-contents, position: bottom + left, stretch: true) = {
+#let alternatives-match(subslides-contents, position: bottom + left, stretch: false) = {
   touying-fn-wrapper(
     utils.alternatives-match,
     last-subslide: calc.max(..subslides-contents.pairs().map(kv => utils.last-required-subslide(kv.at(0)))),
     subslides-contents,
     position: position,
-    stretch: true,
+    stretch: false,
   )
 }
 
@@ -621,7 +621,7 @@
 ///
 /// - position (string): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like context expression, you should set `stretch: false`.
 ///
@@ -630,7 +630,7 @@
   start: auto,
   repeat-last: true,
   position: bottom + left,
-  stretch: true,
+  stretch: false,
   ..args,
 ) = {
   let extra = if start == auto {
@@ -666,7 +666,7 @@
 ///
 /// - position (string): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like context expression, you should set `stretch: false`.
 ///
@@ -676,7 +676,7 @@
   end: none,
   count: none,
   position: bottom + left,
-  stretch: true,
+  stretch: false,
   ..kwargs,
   fn,
 ) = {
@@ -720,12 +720,12 @@
 ///
 /// - position (string): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like context expression, you should set `stretch: false`.
 ///
 /// -> content
-#let alternatives-cases(cases, fn, position: bottom + left, stretch: true, ..kwargs) = {
+#let alternatives-cases(cases, fn, position: bottom + left, stretch: false, ..kwargs) = {
   touying-fn-wrapper(
     utils.alternatives-cases,
     last-subslide: calc.max(..cases.map(utils.last-required-subslide)),
@@ -1625,7 +1625,11 @@
 
 #let _rewind-states(states, location) = {
   for s in states {
-    s.update(s.at(selector(location)))
+    if type(s) == dictionary {
+      (s.update)((s.at)(selector(location)))
+    } else {
+      s.update(s.at(selector(location)))
+    }
   }
 }
 

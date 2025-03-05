@@ -361,6 +361,8 @@
 /// - setting (function): The setting of the heading. Default is `body => body`.
 ///
 /// - style (function): The style of the heading. If `style` is a function, it will use the function to style the heading. For example, `style: current-heading => current-heading.body`.
+/// 
+///   If you set it to `style: auto`, it will could be controlled by `show heading` rule.
 ///
 /// -> content
 #let display-current-heading(
@@ -370,10 +372,13 @@
   depth: 9999,
   style: (setting: body => body, numbered: true, current-heading) => setting({
     if numbered and current-heading.numbering != none {
-      _typst-builtin-numbering(
-        current-heading.numbering,
-        ..counter(heading).at(current-heading.location()),
-      ) + h(.3em)
+      (
+        _typst-builtin-numbering(
+          current-heading.numbering,
+          ..counter(heading).at(current-heading.location()),
+        )
+          + h(.3em)
+      )
     }
     current-heading.body
   }),
@@ -384,6 +389,15 @@
     if current-heading != none {
       if style == none {
         current-heading
+      } else if style == auto {
+        let current-level = current-heading.level
+        if current-level == 1 {
+          text(.715em, current-heading)
+        } else if current-level == 2 {
+          text(.835em, current-heading)
+        } else {
+          current-heading
+        }
       } else {
         style(..setting-args, current-heading)
       }
@@ -423,7 +437,7 @@
 ///
 /// - depth (int): The maximum depth of the heading to search. Usually, it should be set as slide-level.
 ///
-/// - sty (function): The style of the heading. If `sty` is a function, it will use the function to style the heading. For example, `sty: current-heading => current-heading.body`.
+/// - style (function): The style of the heading. If `style` is a function, it will use the function to style the heading. For example, `style: (self: none, current-heading) => utils.short-heading(self: self, current-heading)`.
 ///
 /// -> content
 #let display-current-short-heading(
@@ -432,19 +446,17 @@
   hierachical: true,
   depth: 9999,
   setting: body => body,
-  ..sty,
+  style: (self: none, current-heading) => short-heading(self: self, current-heading),
+  ..setting-args,
 ) = (
   context {
-    let sty = if sty.pos().len() > 1 {
-      sty.pos().at(0)
-    } else {
-      current-heading => {
-        short-heading(self: self, current-heading)
-      }
-    }
     let current-heading = current-heading(level: level, hierachical: hierachical, depth: depth)
     if current-heading != none {
-      setting(sty(current-heading))
+      if style == none {
+        current-heading
+      } else {
+        style(self: self, ..setting-args, current-heading)
+      }
     }
   }
 )
@@ -484,11 +496,16 @@
   } else if type(it) == content {
     if it.func() == raw {
       if it.block {
-        "\n" + indent * " " + "```" + it.lang + it
-          .text
-          .split("\n")
-          .map(l => "\n" + indent * " " + l)
-          .sum(default: "") + "\n" + indent * " " + "```"
+        (
+          "\n"
+            + indent * " "
+            + "```"
+            + it.lang
+            + it.text.split("\n").map(l => "\n" + indent * " " + l).sum(default: "")
+            + "\n"
+            + indent * " "
+            + "```"
+        )
       } else {
         "`" + it.text + "`"
       }
@@ -693,7 +710,9 @@
 /// -> content
 #let cover-with-rect(..cover-args, fill: auto, inline: true, body) = {
   if fill == auto {
-    panic("`auto` fill value is not supported until typst provides utilities to" + " retrieve the current page background")
+    panic(
+      "`auto` fill value is not supported until typst provides utilities to" + " retrieve the current page background",
+    )
   }
   if type(fill) == str {
     fill = rgb(fill)
@@ -752,11 +771,10 @@
 /// Cover content with a transparent rectangle.
 ///
 /// Example: `config-methods(cover: utils.semi-transparent-cover)`
-#let semi-transparent-cover(self: none, constructor: rgb, alpha: 85%, body) = {
+#let semi-transparent-cover(self: none, alpha: 85%, body) = {
   cover-with-rect(
     fill: update-alpha(
-      constructor: constructor,
-      self.page.get("fill", default: rgb("#ffffff")),
+      self.page.at("fill", default: rgb("#ffffff")),
       alpha,
     ),
     body,
@@ -998,7 +1016,7 @@
 /// - is-method (boolean): A boolean indicating whether the function is a method function. Default is `false`.
 #let effect(self: none, fn, visible-subslides, cont, is-method: false) = {
   if is-method {
-      fn
+    fn
   } else {
     if check-visible(self.subslide, visible-subslides) {
       fn(cont)
@@ -1075,12 +1093,12 @@
 ///
 /// - position (alignment): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like a context expression, you should set `stretch: false`.
 ///
 /// -> content
-#let alternatives-match(self: none, subslides-contents, position: bottom + left, stretch: true) = {
+#let alternatives-match(self: none, subslides-contents, position: bottom + left, stretch: false) = {
   let subslides-contents = if type(subslides-contents) == dictionary {
     subslides-contents.pairs()
   } else {
@@ -1124,7 +1142,7 @@
 ///
 /// - position (string): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like a context expression, you should set `stretch: false`.
 ///
@@ -1157,7 +1175,7 @@
 ///
 /// - position (string): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like a context expression, you should set `stretch: false`.
 ///
@@ -1203,7 +1221,7 @@
 ///
 /// - position (string): The position of the content. Default is `bottom + left`.
 ///
-/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `true`.
+/// - stretch (boolean): A boolean indicating whether the content should be stretched to the maximum width and height. Default is `false`.
 ///
 ///   Important: If you use a zero-length content like a context expression, you should set `stretch: false`.
 ///
