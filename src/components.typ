@@ -120,9 +120,15 @@
 /// - Check that there are enough rows and columns to fit in all the content blocks.
 ///
 /// That means that `#checkerboard[...][...]` stacks horizontally and `#checkerboard(columns: 1)[...][...]` stacks vertically.
+/// 
+/// - alignment (alignment): The alignment applied to the contents of each checkerboard cell. Default is `center + horizon`.
+/// 
+/// - primary (color): The background color of odd cells. Default is `white`.
+/// 
+/// - secondary (color): The background color of even cells. Default is `silver`.
 ///
 /// -> content
-#let checkerboard(columns: none, rows: none, alignment: center + horizon, color1: white, color2: silver, ..bodies) = {
+#let checkerboard(columns: none, rows: none, alignment: center + horizon, primary: white, secondary: silver, ..bodies) = {
   let bodies = bodies.pos()
   let columns = if type(columns) == int {
     (1fr,) * columns
@@ -156,9 +162,9 @@
     let (idx, body) = idx-body
     let (row, col) = cart-idx(idx)
     let color = if calc.even(row + col) {
-      color1
+      primary
     } else {
-      color2
+      secondary
     }
     set align(alignment)
     rect(inset: .5em, width: 100%, height: 100%, fill: color, body)
@@ -441,7 +447,7 @@
               if slide.location().page() <= current-page and current-page < next-slide-page {
                 [#link(slide.location(), sym.circle.filled)<touying-link>]
               } else {
-                [#link(slide.location(), sym.circle)<touying-link>]
+                [#link(slide.location(), sym.circle.small)<touying-link>]
               }
             }
           }
@@ -462,7 +468,7 @@
               if slide.location().page() <= current-page and current-page < next-slide-page {
                 [#link(slide.location(), sym.circle.filled)<touying-link>]
               } else {
-                [#link(slide.location(), sym.circle)<touying-link>]
+                [#link(slide.location(), sym.circle.small)<touying-link>]
               }
             }
           }
